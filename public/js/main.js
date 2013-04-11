@@ -64,7 +64,9 @@ function   ($,        Backbone,   _) {
     wd.model.Wine = Backbone.Model.extend({
         defaults: {
             id  : "",
-            name: ""
+            name: "",
+            origin: "",
+            year: ""
         }
     });
 
@@ -145,7 +147,8 @@ function   ($,        Backbone,   _) {
     wd.controllers.Home = Backbone.Router.extend({
         routes: {
             "wines": "list",            // #wines
-            "wines/:id" : "wineDetail"  // #wines/id
+            "wines/:id" : "wineDetail",  // #wines/id
+            "add": "add"
         },
 
         list: function() {
@@ -179,7 +182,17 @@ function   ($,        Backbone,   _) {
              * */
             this.wineDetail = new wd.ui.WineDetail({ model: this.wineList.get(id) });
             $("#wineDetail").html( this.wineDetail.render().el );
-         }
+            $("#editWineButton").show();
+        },
+
+        add: function() {
+            console.log('wd.controllers.Home - add');
+
+            /* we do not encapsulate addWine into a view because it's not attached
+             * to any model
+             * */
+            $("#addWine").show();
+        }
     });
 
     /* attach to window for debugging purpose */
