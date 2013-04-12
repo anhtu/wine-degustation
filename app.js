@@ -40,7 +40,13 @@ app.post('/wines', function (req, res){
     _wine.id = _id;
     console.log(_wine);
     wineList.push(_wine);
+    /* stringify the JSON return since it's written */
     res.end(JSON.stringify(_wine));
+});
+
+app.put('/wines/:id', function (req, res) {
+    var _wine = req.body;
+    res.end(JSON.stringify(_.extend(_.findWhere(wineList, {id: req.params.id}), _wine)));
 });
 
 app.listen(8888);

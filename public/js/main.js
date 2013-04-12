@@ -12,7 +12,8 @@ requirejs.config({
     paths: {
         jquery     : 'jquery-1.8.2.min',
         underscore : 'underscore-min',
-        backbone   : 'backbone-min'
+        backbone   : 'backbone-min',
+        bootstrap  : '../../bootstrap/js/bootstrap.min'
     },
 
     /* define dependencies for each module and export */
@@ -26,14 +27,23 @@ requirejs.config({
         backbone: {
             deps: ['underscore', 'jquery'],
             exports: 'Backbone'
+        },
+        bootstrap: {
+            deps: ['jquery']
         }
     }
 });
 
 // Start the main app logic.
-requirejs(['jquery', 'backbone', 'underscore'],
+requirejs(['jquery', 'backbone', 'underscore', 'bootstrap'],
 
-function   ($,        Backbone,   _) {
+/*
+ * if we do not import bootstrap here, our modal does not work
+ * basically, bootstrap only extends some jQuery feature
+ * so why?
+ *
+ * */
+function   ($,        Backbone,   _, bootstrap) {
 
     /* defining namespace - wd stands for wine degustation */
     (function (){
@@ -107,7 +117,7 @@ function   ($,        Backbone,   _) {
              *    our model, then saved onto the server, new data fetched, we re-render our View
              *    ==> change event still occur after data fetched
              * */
-
+            _.bindAll(this, "render");
              this.model.on("change", this.render);
         },
         render: function() {
@@ -149,8 +159,6 @@ function   ($,        Backbone,   _) {
         },
         addWine: function() {
             console.log("wd.ui.WineListView - addWine");
-            console.log(this.model);
-            console.log(this.model.length);
             var _wine = this.model.at(this.model.length - 1);
             $(this.el).append(new wd.ui.WineListItem({ model: _wine }).render().el);
         }
@@ -159,23 +167,117 @@ function   ($,        Backbone,   _) {
     wd.ui.WineDetail = Backbone.View.extend({
         tagName: 'div',
         className: 'thumbnail',
-        events: {},
-        initialize: function () {
-
-            if (this.model) this.model.on('change', this.render);
+        mode: "VIEW",  // in the view, we can assign attribute directly like this
+        events: {
+            'click button[name="edit"]': 'edit',
+            'click button[name="save"]': 'save'
         },
+
+        template: {
+            VIEW: '<img src="imgs/260x120.png">\n<button type="button" name="edit" class="btn float-btn"><i class="icon-edit"></i>Edit</button>' +
+                  '<div class="caption"><h3><%=wine.name %></h3></div>',
+            EDIT: '<img src="imgs/260x120.png" style="margin-bottom: 10px;">\n<button type="button" name="save" class="btn float-btn"><i class="icon-ok"></i>Save</button>' +
+                  '<input type="text" name="name" placeholder="<%=wine.name %>">' +
+                  '<input type="text" name="origin" placeholder="<%=wine.origin %>">' +
+                  '<input type="text" name="year" placeholder="<%=wine.year%>">'
+        },
+        initialize: function () {
+            console.log(this.mode);
+
+            _.bindAll(this, "render");
+            if (this.model) {
+                this.model.on('change', this.render);
+            }
+        },
+
+        /* depending on the mode, we render differently */
         render: function() {
             console.log("wd.ui.WineDetail - render");
-            $(this.el).html(_.template('<img src="imgs/260x120.png">\n<button class="btn float-btn"><i class="icon-edit"></i>Edit</button>' +
-            '<div class="caption"><h3><%=wine.name %></h3></div>', { wine: this.model.toJSON()}));
+            /* this will modify directly in the DOM */
+            $(this.el).html(_.template(this.template[this.mode], { wine: this.model.toJSON()}));
             return this;
+        },
+
+        edit: function() {
+            console.log("wd.ui.WineDetail - edit");
+            this.mode = 'EDIT';
+            this.render();
+        },
+
+        save: function() {
+            console.log("wd.ui.WineDetail - save");
+            var form = $(this.el)
+              , _name = form.find("input[name='name']").val() || this.model.get('name')
+              , _year = form.find("input[name='year']").val() || this.model.get('year')
+              , _origin = form.find("input[name='origin']").val() || this.model.get('origin');
+
+            /* if id is null, save will init a POST request to create new, otherwise it's a PUT request */
+            this.model.url = "/" + wd.app.URL.WINES + "/" + this.model.id;
+            this.model.save({ id: this.model.id, name: _name, year: _year, origin: _origin},
+                {
+                    error: function () { console.log("save problem"); }
+                },
+                {
+                    success: function() { console.log("saving ok"); }
+                }
+            );
+
+            form.find("input[name='name']").val('');
+            form.find("input[name='year']").val('');
+            form.find("input[name='origin']").val('');
         }
     });
+
+    /**
+     * AddWineView is a wrapper of Bootstrap Modal
+     */
+    wd.ui.AddWineView = Backbone.View.extend({
+        tagName: 'div',
+        className: 'modal hide fade',
+        events: {
+            'a.btn': 'close'
+        },
+        render: function () {
+            $(this.el).html(_.template('<div class="modal-header">' +
+                '<button type="button" class="close" aria-hidden="true">&times;</button>' +
+                '<h3>Add Wine</h3>' +
+                '</div>' +
+            '<div class="modal-body">' +
+                '<input type="text" name="name" placeholder="name of wine">' +
+                '<input type="text" name="origin" placeholder="origin">' +
+                '<input type="text" name="year" placeholder="year of production"><br>' +
+                '</div>' +
+            '<div class="modal-footer">' +
+                '<!-- data-dismiss attribute allows to close the modal -->' +
+                '<a data-target="#" class="btn" name="close">Close</a>' +
+                '<button type="button" class="btn btn-primary" name="submit">Add</button>' +
+                '</div>')
+            );
+
+            return this;
+        },
+
+        show: function () {
+
+            return this;
+        },
+
+        /* instead of using data-dismiss of button in bootstrap modal
+         * we use <a href> to update our URL and use close event in backbone
+         * because if we use data-dismiss, we are unable to return to our home,
+         * 'href' function is disabled
+         * */
+        close: function () {
+            console.log('close');
+            return this;
+        }
+
+     });
 
     /*======== ROUTER ========*/
     wd.controllers.Home = Backbone.Router.extend({
         routes: {
-            "wines": "list",            // #wines
+            "wines": "list",             // #wines
             "wines/:id" : "wineDetail",  // #wines/id
             "add": "add"
         },
@@ -213,6 +315,10 @@ function   ($,        Backbone,   _) {
             $("#wineDetail").html( this.wineDetail.render().el );
         },
 
+        /*
+         * wrap addWine function into a View that uses Bootstrap Model
+         *
+         */
         add: function() {
             console.log('wd.controllers.Home - add');
 
@@ -248,6 +354,10 @@ function   ($,        Backbone,   _) {
                     addWineForm.find("input[name='origin']").val('');
                 }
             );
+
+            this.addWine = new wd.ui.AddWineView();
+            $("body").append(this.addWine.render().el);
+            this.addWine.show();
         }
     });
 
