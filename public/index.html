@@ -36,6 +36,24 @@
         .muted {
             color: #999999;
         }
+
+        .float-btn {
+            position: absolute;
+            right: 0px;
+            top: 0px;
+            display: none;
+        }
+
+        .float-btn:hover {
+            display: inline-block;
+        }
+        #wineDetail {
+            position: relative;
+        }
+
+        #wineDetail:hover .float-btn {
+            display: inline-block;
+        }
     </style>
 </head>
 <!-- need some padding for the body -->
@@ -106,35 +124,22 @@
         <div id="wineDetail" class="span3"></div>
 
         <!-- edit button -->
-        <div id="editWineButton" class="span3" style="display: none">
+        <div id="editWineButton" class="span3">
             <div class="btn-group">
-                <button class="btn"><i class="icon-edit"></i>Edit</button>
             </div>
         </div>
     </div><br/>
 
     <!-- add wine -->
-    <form id="addWine" class="form-horizontal" style="display: none">
-        <div class="control-group">
-            <div class="controls">
-                <input type="text" placeholder="name of wine">
-            </div>
-        </div>
-        <div class="control-group">
-            <div class="controls">
-                <input type="text" placeholder="origin">
-            </div>
-        </div>
-        <div class="control-group">
-            <div class="controls">
-                <input type="text" placeholder="year of production">
-            </div>
-        </div>
-        <div class="control-group">
-            <div class="controls">
-                <button type="submit" class="btn btn-primary">Save</button>
-            </div>
-        </div>
+    <form id="addWine" style="display: none">
+        <fieldset>
+            <legend>Add Wine</legend>
+                <input type="text" name="name" placeholder="name of wine">
+                <input type="text" name="origin" placeholder="origin">
+                <input type="text" name="year" placeholder="year of production"><br>
+                <!-- does not use type='submit' since it can submit and redirect the url -->
+                <button type="button" name="submit" class="btn btn-primary">Save</button>
+        </fieldset>
     </form>
 
 

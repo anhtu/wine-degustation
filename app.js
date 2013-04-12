@@ -21,6 +21,9 @@ var wineList = [ { name: "Cabernet Sauvignon", id: "cabernet_sauvignon" }
 /* server static file from public folder */
 app.use('/public', express.static(__dirname + '/public'));
 
+/* parse response body to JSON */
+app.use(express.bodyParser());
+
 app.get('/wines', function (req, res) {
     res.send(wineList);
 });
@@ -29,7 +32,16 @@ app.get('/wines/:id', function (req, res) {
     res.send(_.findWhere(wineList, {id: req.params.id}));
 });
 
-
+app.post('/wines', function (req, res){
+    console.log(req.body);
+    var _wine = req.body
+      , _name = _wine.name;
+    _id = _name.toLowerCase().replace(' ', '_');
+    _wine.id = _id;
+    console.log(_wine);
+    wineList.push(_wine);
+    res.end(JSON.stringify(_wine));
+});
 
 app.listen(8888);
 

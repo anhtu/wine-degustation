@@ -62,11 +62,26 @@ function   ($,        Backbone,   _) {
 
     /*======== MODEL ========*/
     wd.model.Wine = Backbone.Model.extend({
+
         defaults: {
-            id  : "",
+            // id  : "", does not set id for the model since if it has id, it considered to be old
             name: "",
             origin: "",
             year: ""
+        },
+
+        initialize: function () {
+            console.log('wd.model.Wine - init');
+            /**
+            if (this.attributes.name) { // we can access like this or this.get('name')
+                this.id = this.attributes.name.toLowerCase().replace(' ','_');
+                this.url = "/" + wd.app.URL.WINES + "/" + this.id;
+            }
+            else {
+                this.url = "/" + wd.app.URL.WINES;
+            }
+            **/
+            this.url = "/" + wd.app.URL.WINES;
         }
     });
 
@@ -115,6 +130,12 @@ function   ($,        Backbone,   _) {
              * */
             this.model.on("reset", function () { console.log("reset occurs"); });
             this.model.on("change", function () { console.log("change occurs"); });
+
+            /* that's why we need to bind addWine to this and the bind must happen before */
+            _.bindAll(this, "addWine");
+
+            /* pay attention to this kind of binding, this in addWine will refer to the model */
+            this.model.on("add", this.addWine);
         },
         render: function(){
             console.log("wd.ui.WineListView - render");
@@ -125,6 +146,13 @@ function   ($,        Backbone,   _) {
                 $(self.el).append(new wd.ui.WineListItem({ model: wine }).render().el);
             }, this);
             return this;
+        },
+        addWine: function() {
+            console.log("wd.ui.WineListView - addWine");
+            console.log(this.model);
+            console.log(this.model.length);
+            var _wine = this.model.at(this.model.length - 1);
+            $(this.el).append(new wd.ui.WineListItem({ model: _wine }).render().el);
         }
     });
 
@@ -138,7 +166,8 @@ function   ($,        Backbone,   _) {
         },
         render: function() {
             console.log("wd.ui.WineDetail - render");
-            $(this.el).html(_.template('<img src="imgs/260x120.png">\n<div class="caption"><h3><%=wine.name %></h3></div>', { wine: this.model.toJSON()}));
+            $(this.el).html(_.template('<img src="imgs/260x120.png">\n<button class="btn float-btn"><i class="icon-edit"></i>Edit</button>' +
+            '<div class="caption"><h3><%=wine.name %></h3></div>', { wine: this.model.toJSON()}));
             return this;
         }
     });
@@ -182,16 +211,43 @@ function   ($,        Backbone,   _) {
              * */
             this.wineDetail = new wd.ui.WineDetail({ model: this.wineList.get(id) });
             $("#wineDetail").html( this.wineDetail.render().el );
-            $("#editWineButton").show();
         },
 
         add: function() {
             console.log('wd.controllers.Home - add');
 
+            var self = this;
             /* we do not encapsulate addWine into a view because it's not attached
              * to any model
              * */
-            $("#addWine").show();
+            var addWineForm = $("#addWine");
+            addWineForm.show();
+            /* click on add wine */
+            addWineForm.find("button[name='submit']").on("click",
+                function () {
+                    var _newWine
+                      , _name = addWineForm.find("input[name='name']").val()
+                      , _year = addWineForm.find("input[name='year']").val()
+                      , _origin = addWineForm.find("input[name='origin']").val();
+                    _newWine = new wd.model.Wine({ name: _name, year: _year, origin: _origin});
+
+                    console.log(_newWine);
+
+                    /* if id is null, save will init a PUT request */
+                    _newWine.save(
+                        {
+                            error: function () { console.log("save problem"); }
+                        },
+                        {
+                            success: function() { console.log("saving ok"); console.log(self.wineList); self.wineList.add(_newWine); }
+                        }
+                    );
+
+                    addWineForm.find("input[name='name']").val('');
+                    addWineForm.find("input[name='year']").val('');
+                    addWineForm.find("input[name='origin']").val('');
+                }
+            );
         }
     });
 
