@@ -232,12 +232,17 @@ function   ($,        Backbone,   _, bootstrap) {
      * AddWineView is a wrapper of Bootstrap Modal
      */
     wd.ui.AddWineView = Backbone.View.extend({
-        tagName: 'div',
-        className: 'modal hide fade',
-        events: {
-            'a.btn': 'close'
+
+        /**
+         * for view that uses modal, we use jQuery and static binding
+         * do not use backbone view events
+         */
+        initialize: function() {
+            _.bindAll(this, 'render', 'saveWine', 'close');
         },
         render: function () {
+            console.log('wd.ui.AddWineView - render');
+
             $(this.el).html(_.template('<div class="modal-header">' +
                 '<button type="button" class="close" aria-hidden="true">&times;</button>' +
                 '<h3>Add Wine</h3>' +
@@ -248,18 +253,59 @@ function   ($,        Backbone,   _, bootstrap) {
                 '<input type="text" name="year" placeholder="year of production"><br>' +
                 '</div>' +
             '<div class="modal-footer">' +
-                '<!-- data-dismiss attribute allows to close the modal -->' +
-                '<a data-target="#" class="btn" name="close">Close</a>' +
-                '<button type="button" class="btn btn-primary" name="submit">Add</button>' +
+                '<a href="#" class="btn" name="close">Close</a>' +
+                '<a href="#" class="btn btn-primary" name="submit">Add</button>' +
                 '</div>')
             );
+
+            $('#addWine').html(this.el);
+
+            /* event binding */
+            $('a[name="close"]').on('click', this.close);
+            $('a[name="submit"]').on('click', this.saveWine);
+
+            /* show the modal */
+            $('#addWine').modal('show');
 
             return this;
         },
 
-        show: function () {
+        /* store a reference to new wine added */
+        newWine: null,
+        saveWine: function () {
+            console.log('wd.ui.AddWineView - saveWine');
 
-            return this;
+            var _form = $('#addWine')
+              , _newWine
+              , _name = _form.find("input[name='name']").val()
+              , _year = _form.find("input[name='year']").val()
+              , _origin = _form.find("input[name='origin']").val();
+            _newWine = new wd.model.Wine({ name: _name, year: _year, origin: _origin});
+
+            /* if id is null, save will init a PUT request */
+            var self = this;
+            _newWine.save(
+                {
+                    error: function () { console.log("save problem"); }
+                },
+                {
+                    success: function() {
+                        console.log("saving ok");
+
+                        /* save the new wine */
+                        self.newWine = _newWine;
+
+                        /* trigger the event */
+                        self.trigger('newWineAdded');
+                    }
+                }
+            );
+
+            _form.find("input[name='name']").val('');
+            _form.find("input[name='year']").val('');
+            _form.find("input[name='origin']").val('');
+
+            $("#addWine").modal("hide");
         },
 
         /* instead of using data-dismiss of button in bootstrap modal
@@ -268,7 +314,8 @@ function   ($,        Backbone,   _, bootstrap) {
          * 'href' function is disabled
          * */
         close: function () {
-            console.log('close');
+            console.log('wd.ui.AddWineView - close');
+            $("#addWine").modal("hide");
             return this;
         }
 
@@ -322,42 +369,17 @@ function   ($,        Backbone,   _, bootstrap) {
         add: function() {
             console.log('wd.controllers.Home - add');
 
-            var self = this;
-            /* we do not encapsulate addWine into a view because it's not attached
-             * to any model
-             * */
-            var addWineForm = $("#addWine");
-            addWineForm.show();
-            /* click on add wine */
-            addWineForm.find("button[name='submit']").on("click",
-                function () {
-                    var _newWine
-                      , _name = addWineForm.find("input[name='name']").val()
-                      , _year = addWineForm.find("input[name='year']").val()
-                      , _origin = addWineForm.find("input[name='origin']").val();
-                    _newWine = new wd.model.Wine({ name: _name, year: _year, origin: _origin});
-
-                    console.log(_newWine);
-
-                    /* if id is null, save will init a PUT request */
-                    _newWine.save(
-                        {
-                            error: function () { console.log("save problem"); }
-                        },
-                        {
-                            success: function() { console.log("saving ok"); console.log(self.wineList); self.wineList.add(_newWine); }
-                        }
-                    );
-
-                    addWineForm.find("input[name='name']").val('');
-                    addWineForm.find("input[name='year']").val('');
-                    addWineForm.find("input[name='origin']").val('');
-                }
-            );
-
             this.addWine = new wd.ui.AddWineView();
-            $("body").append(this.addWine.render().el);
-            this.addWine.show();
+
+            /* show the Modal */
+            this.addWine.render();
+
+            var self = this;
+            this.addWine.on('newWineAdded', function () {
+                console.log('new wine added event');
+                console.log(self.addWine.newWine);
+                self.wineList.add(self.addWine.newWine);
+            });
         }
     });
 
