@@ -70,6 +70,48 @@ function   ($,        Backbone,   _, bootstrap) {
         URL: { WINES: 'wines' }
     };
 
+    /*======= UTILITY =======*/
+    (function () {
+        wd.app.util = {};
+
+        // extend jquery
+        // clear the form: see http://www.learningjquery.com/2007/08/clearing-form-data
+        // only clear the visible state of the form
+        $.fn.clearForm = function() {
+            return this.each(function() {
+                var type = this.type, tag = this.tagName.toLowerCase();
+                if (tag == 'form')
+                    return $(':input',this).clearForm();
+                if (type == 'text' || type == 'password' || tag == 'textarea')
+                    this.value = '';
+                else if (type == 'checkbox' || type == 'radio')
+                    this.checked = false;
+                else if (tag == 'select')
+                    this.selectedIndex = -1;
+            });
+        };
+
+        // dependency: underscore
+        $.fn.formToObj = function() {
+            /* check if it's jquery object
+             * http://stackoverflow.com/questions/1853223/check-if-object-is-a-jquery-object
+             */
+            var _content = $('<form></form>').append(this.clone())
+              // wrap by form to use with jquery serialize, also clone the element otherwise it will be moved
+              , array    = $(_content).serializeArray()
+              , _newObj  = {};
+
+            _.each(array, function (el) {
+                var _obj = {};
+                _obj[el.name] = el.value;
+                _.extend(_newObj, _obj);
+            });
+
+            return _newObj;
+        };
+    })();
+
+
     /*======== MODEL ========*/
     wd.model.Wine = Backbone.Model.extend({
 
@@ -275,12 +317,7 @@ function   ($,        Backbone,   _, bootstrap) {
         saveWine: function () {
             console.log('wd.ui.AddWineView - saveWine');
 
-            var _form = $('#addWine')
-              , _newWine
-              , _name = _form.find("input[name='name']").val()
-              , _year = _form.find("input[name='year']").val()
-              , _origin = _form.find("input[name='origin']").val();
-            _newWine = new wd.model.Wine({ name: _name, year: _year, origin: _origin});
+            var _newWine = new wd.model.Wine( $('#addWine').formToObj() );
 
             /* if id is null, save will init a PUT request */
             var self = this;
@@ -301,11 +338,9 @@ function   ($,        Backbone,   _, bootstrap) {
                 }
             );
 
-            _form.find("input[name='name']").val('');
-            _form.find("input[name='year']").val('');
-            _form.find("input[name='origin']").val('');
+            $('#addWine').clearForm();
 
-            $("#addWine").modal("hide");
+            $('#addWine').modal('hide');
         },
 
         /* instead of using data-dismiss of button in bootstrap modal
@@ -376,8 +411,6 @@ function   ($,        Backbone,   _, bootstrap) {
 
             var self = this;
             this.addWine.on('newWineAdded', function () {
-                console.log('new wine added event');
-                console.log(self.addWine.newWine);
                 self.wineList.add(self.addWine.newWine);
             });
         }
