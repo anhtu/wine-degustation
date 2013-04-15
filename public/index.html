@@ -131,8 +131,63 @@
         </div>
     </div><br/>
 
+    <button onclick="$('#addWine1').modal()" class="btn">Add Wine</button>
 
-    <!-- end of container -->
+    <!-- multi-stage add wine modal -->
+    <div id="addWine1" class="modal hide">
+
+        <div class="modal-header">
+            <button type="button" class="close" aria-hidden="true">&times;</button>
+            <h3>Add Wine 1</h3>
+        </div>
+        <div class="modal-body">
+            <input type="text" name="name" placeholder="name of wine">
+            <input type="text" name="origin" placeholder="origin">
+            <input type="text" name="year" placeholder="year of production">
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn" onclick="$('#addWine1').modal('hide');">Close</a>
+            <a href="#" onclick="$('.modal-footer, .modal-body').hide(); $('#loader').show(2000, function() { $('#addWine1').modal('hide'); $('#addWine2').modal(); });" class="btn btn-primary">Next</a>
+        </div>
+
+        <div id="loader" style="height: 50px; display: none;">
+            <img src="imgs/loader-big.gif" />
+        </div>
+    </div>
+    <div id="addWine2" class="modal hide">
+        <div class="modal-header">
+            <button type="button" class="close" aria-hidden="true">&times;</button>
+            <h3>Add Wine 2</h3>
+        </div>
+        <div class="modal-body">
+            <input type="text" name="name" placeholder="name of wine">
+            <input type="text" name="origin" placeholder="origin">
+            <input type="text" name="year" placeholder="year of production">
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn btn-primary" onclick="$('#addWine2').modal('hide'); $('#addWine1').modal('show');">Previous</a>
+            <a href="#" class="btn" onclick="$('#addWine2').modal('hide');">Cancel</a>
+            <a href="#" onclick="$('#addWine2').modal('hide');$('#addWine3').modal();" class="btn btn-primary">Next</a>
+        </div>
+    </div>
+    <div id="addWine3" class="modal hide">
+        <div class="modal-header">
+            <button type="button" class="close" aria-hidden="true">&times;</button>
+            <h3>Add Wine 3</h3>
+        </div>
+        <div class="modal-body">
+            <input type="text" name="name" placeholder="name of wine">
+            <input type="text" name="origin" placeholder="origin">
+            <input type="text" name="year" placeholder="year of production">
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn btn-primary" onclick="$('#addWine3').modal('hide'); $('#addWine2').modal('show');">Previous</a>
+            <a href="#" class="btn" onclick="$('#addWine3').modal('hide');">Cancel</a>
+            <a href="#" class="btn btn-primary" onclick="$('#addWine3').modal('hide');">Finish</a>
+        </div>
+    </div>
+
+        <!-- end of container -->
     </div>
 
     <div id="footer">

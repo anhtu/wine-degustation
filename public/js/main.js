@@ -217,7 +217,7 @@ function   ($,        Backbone,   _, bootstrap) {
 
         template: {
             VIEW: '<img src="imgs/260x120.png">\n<button type="button" name="edit" class="btn float-btn"><i class="icon-edit"></i>Edit</button>' +
-                  '<div class="caption"><h3><%=wine.name %></h3></div>',
+                  '<div class="caption"><h3><%=wine.name %></h3><i><%=wine.year %></i><p><%=wine.origin %></p></div>',
             EDIT: '<img src="imgs/260x120.png" style="margin-bottom: 10px;">\n<button type="button" name="save" class="btn float-btn"><i class="icon-ok"></i>Save</button>' +
                   '<input type="text" name="name" placeholder="<%=wine.name %>">' +
                   '<input type="text" name="origin" placeholder="<%=wine.origin %>">' +
@@ -296,7 +296,7 @@ function   ($,        Backbone,   _, bootstrap) {
                 '</div>' +
             '<div class="modal-footer">' +
                 '<a href="#" class="btn" name="close">Close</a>' +
-                '<a href="#" class="btn btn-primary" name="submit">Add</button>' +
+                '<a href="#" class="btn btn-primary" name="submit">Add</a>' +
                 '</div>')
             );
 
