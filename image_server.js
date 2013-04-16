@@ -3,56 +3,57 @@ var express  = require('express')
   , app      = express()
   , request  = require('request')
   , gm       = require('gm')
-  , fs       = require('fs');
+  , fs       = require('fs')
+  , http     = require('http');
 
 /* http:/localhost:2687/img?url=.... */
 app.get('/img', function(req, res) {
-	var _url = req.query.url;
-	console.log(_url);
+    var _url = require('url').parse(req.query.url);
 
+    console.log('hostname: ' + _url.hostname);
+    console.log('pathname: ' + _url.pathname);
 
-//var _url = 'http://cozier.co.za/wp-content/uploads/2013/02/white-wines-chardonnay-2010-diemersdal-unwooded.jpg';
-      			//res.setHeader('Content-Type', 'image/jpeg');
- res.set('Content-Type', 'image/jpeg');
+    var options = {
+        hostname: _url.hostname,
+        method: 'GET',
+        path: _url.pathname
+    };
 
-	//if (req.headers['content-type'] === 'image/jpeg') {
-		request.get(_url).pipe(fs.createWriteStream('temp_img.jpg')).pipe(res);
-//r.on('end', function () { 
-//	console.log('end');
-			//res.sendfile('temp_img.jpg');
-//});
-		/* resize and stream out the reponse */
-		//r.on('end', function () { 
-		//	console.log('end');
-		//	gm('temp_img.jpg')
-		//	.resize(32, 32)
-			//.stream(function (err, stdout, stderr) {
-      		//	stdout.pipe(res);
-    		//});
-			//res.sendfile('temp_img.jpg');
-		//	.stream(function streamOut (err, stdout, stderr) {
-        //    if (err) return next(err);
-        //    stdout.pipe(res); //pipe to response
+    var request = http.request(options, function (response) {
 
-            // the following line gave me an error compaining for already sent headers
-            //stdout.on('end', function(){res.writeHead(200, { 'Content-Type': 'ima    ge/jpeg' });}); 
+        console.log('response header received');
+        response.pipe(fs.createWriteStream('temp_img.jpg'));
 
-       //     stdout.on('error', next);
-       // });
-	//	});
-//res.sendfile('temp_img.jpg');
-      //	    .write('temp_img.jpg', function () {});//, function () {    
-      		//	fs.exists('temp_img.jpg', function (exists) {
-      	//		if (exists) {
-      	//			console.log('exists');
-      	//		res.sendfile('temp_img.jpg');
-		//		}
-      	//		}); 
-      	    //});
-    //} else {
-    //    res.writeHead(400);
-    //    res.end('Feed me a JPEG!');
-    //} 
+        response.on('end', function() {
+            console.log('finished');
+
+            res.set('Content-Type', 'image/jpeg');
+
+            gm('temp_img.jpg')
+                .resize(32, 32)
+                .stream(function stream(err, stdout, stderr) {
+                    console.log('stream image');
+
+                    if (err) { console.log('got error ' + err.message); }
+                        stdout.pipe(res); //pipe to response
+
+                        stdout.on('error', function () { console.log('got error'); });
+                    });
+          });
+
+        response.on('error', function (err) {
+            console.log('got error ' + err.message);
+        });
+
+    });
+
+    request.on('error', function (err) {
+        console.log('got error' + err.message);
+    });
+
+    /* !!! always need end */
+    request.end();
+
 });
 
-app.listen(2687);
+app.listen(8088);
