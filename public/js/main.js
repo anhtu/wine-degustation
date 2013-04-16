@@ -419,4 +419,10 @@ function   ($,        Backbone,   _, bootstrap) {
     /* attach to window for debugging purpose */
     window.homeScreen = new wd.controllers.Home();
     Backbone.history.start();
+
+    // chardonnay: cdn.greenoptions.com/9/9f/300x300px-LS-9f23a9df_yarden-chardonnay-odem-organic-vineyard.jpg
+    // cabernet-sauvignon: http://cdn.gauntleys.com/productimages/800/wine/beau-joubert-oak-lane-merlot-cabernet-sauvignon.jpg
+    // Saint Amour: http://www.tanners-wines.co.uk/media/catalog/product/cache/1/image/9df78eab33525d08d6e5fb8d27136e95/j/r/jr016.jpg
+    // cote du rhone: http://www.arenaflowers.com/product_image/large/1930-darriaud_reserve_cotes_du_rhone_village.jpg
+    // Champagne: http://media1.agfg.com.au/images/wine/39.jpg
 });

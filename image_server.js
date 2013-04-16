@@ -1,7 +1,6 @@
 
 var express  = require('express')
   , app      = express()
-  , request  = require('request')
   , gm       = require('gm')
   , fs       = require('fs')
   , http     = require('http');
@@ -31,14 +30,14 @@ app.get('/img', function(req, res) {
 
             gm('temp_img.jpg')
                 .resize(32, 32)
-                .stream(function stream(err, stdout, stderr) {
+                .stream(function (err, stdout, stderr) {
                     console.log('stream image');
 
                     if (err) { console.log('got error ' + err.message); }
-                        stdout.pipe(res); //pipe to response
+                    stdout.pipe(res); //pipe to response
 
-                        stdout.on('error', function () { console.log('got error'); });
-                    });
+                    stdout.on('error', function () { console.log('got error'); });
+                });
           });
 
         response.on('error', function (err) {
