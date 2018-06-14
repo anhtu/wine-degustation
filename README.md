@@ -1,11 +1,11 @@
-> first step in this project is to design the user interface for the wines degustation application
+Wines degustation application
 
-The technologies we will use is:
+Technologies:
 - backboneJS
-- twitter bootstrap
-- nodeJS
-- express
-- requireJS
+- Twitter bootstrap
+- NodeJS
+- Express
+- RequireJS
 - jQuery
 
 1> start with a blank page - import bootstrap css
